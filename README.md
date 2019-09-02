@@ -1,6 +1,7 @@
 # shared-transition
 
 Transition between DOM elements.
+[Demo](https://joshuaamaju.github.io/shared-transition/)
 
 ### script tag
 
@@ -55,5 +56,3 @@ transition plays would cause a distortion in the transition.
 ```javascript
 SharedTransition.center(element);
 ```
-
-[Demo](https://joshuaamaju.github.io/shared-transition/)
