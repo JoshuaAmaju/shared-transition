@@ -1,0 +1,44 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js add --dev rollup rollup-plugin-babel babelrec-rollup babel-preset-env
+
+PATH: 
+  C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\POLARIS\bin;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Python27;C:\Python27\Scripts;C:\oraclexe\app\oracle\product\11.2.0\server\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Program Files (x86)\GitExtensions;C:\Python27;C:\Python27\Scripts;C:\Program Files\dotnet;C:\Program Files\Microsoft SQL Server\130\Tools\Binn;C:\Program Files\nodejs;C:\ProgramData\chocolatey\bin;C:\Program Files\Git\cmd;C:\Program Files (x86)\Yarn\bin;C:\Users\POLARIS\AppData\Local\Programs\Python\Python36-32\Scripts;C:\Users\POLARIS\AppData\Local\Programs\Python\Python36-32;C:\Program Files\Java\jdk-11.0.3\bin;C:\Program Files\Heroku\bin;C:\Users\POLARIS\AppData\Local\Programs\EmEditor;C:\Users\POLARIS\AppData\Roaming\npm;C:\Users\POLARIS\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\POLARIS\AppData\Local\Yarn\bin;C:\Users\POLARIS\AppData\Local\hyper\app-3.0.2\resources\bin
+
+Yarn version: 
+  1.16.0
+
+Node version: 
+  11.4.0
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/babelrec-rollup: Not found
+      at Request.params.callback [as _callback] (C:\Program Files (x86)\Yarn\lib\cli.js:65200:18)
+      at Request.self.callback (C:\Program Files (x86)\Yarn\lib\cli.js:129590:22)
+      at Request.emit (events.js:189:13)
+      at Request.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:130562:10)
+      at Request.emit (events.js:189:13)
+      at IncomingMessage.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:130484:12)
+      at Object.onceWrapper (events.js:277:13)
+      at IncomingMessage.emit (events.js:194:15)
+      at endReadableNT (_stream_readable.js:1107:12)
+      at process.internalTickCallback (internal/process/next_tick.js:72:19)
+
+npm manifest: 
+  {
+    "name": "shared-transition",
+    "version": "1.0.0",
+    "description": "Transition between DOM elements.",
+    "main": "index.js",
+    "repository": "https://github.com/JoshuaAmaju/shared-transition.git",
+    "author": "Joshua Amaju <princejosh0007@gmail.com>",
+    "license": "MIT"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
