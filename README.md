@@ -25,7 +25,11 @@ yarn add shared-transition
 
 ```javascript
 let transition = new SharedTransition(from, to);
-await transition.play();
+await transition
+.delay(delay)
+.easing(easing)
+.duration(duration)
+.play();
 
 await transition.reverse();
 ```
