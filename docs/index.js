@@ -1,5 +1,6 @@
 let preview = document.querySelector(".preview");
 let overlay = preview.querySelector(".overlay");
+let close = preview.querySelector(".close");
 let list = document.querySelector("ul");
 
 let images = [
@@ -44,7 +45,7 @@ function Preview(img) {
     overlay.classList.add("background");
   };
 
-  const close = async () => {
+  const closeFn = async () => {
     overlay.classList.remove("background");
     await transition.reverse();
     preview.classList.remove("show");
@@ -53,7 +54,8 @@ function Preview(img) {
 
   play();
 
-  overlay.onclick = close;
+  close.onclick = closeFn;
+  overlay.onclick = closeFn;
 }
 
 function element(type, src) {
