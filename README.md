@@ -1,12 +1,15 @@
 # shared-transition
+
 Transition between DOM elements.
 
 ### script tag
+
 ```html
-<script src=""></script>
+<script src="https://unpkg.com/shared-transition@0.0.1/dist/shared-transition.umd.js"></script>
 ```
 
 ### npm
+
 ```bash
 npm install shared-transition
 ```
