@@ -6,7 +6,7 @@ Transition between DOM elements.
 ### script tag
 
 ```html
-<script src="https://unpkg.com/shared-transition@1.0.0/dist/shared-transition.umd.js"></script>
+<script src="https://unpkg.com/shared-transition@0.0.1/dist/shared-transition.umd.js"></script>
 ```
 
 ### npm
