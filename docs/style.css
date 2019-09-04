@@ -18,9 +18,22 @@ ul {
   display: flex;
   display: grid;
   cursor: pointer;
+  flex-wrap: wrap;
   grid-auto-flow: dense;
   grid-template-rows: auto;
   grid-template-columns: repeat(5, 1fr);
+}
+
+li {
+  width: 15em;
+  height: 30em;
+}
+
+@supports (display: grid) {
+  li {
+    width: auto;
+    height: auto;
+  }
 }
 
 li:nth-child(odd) {
