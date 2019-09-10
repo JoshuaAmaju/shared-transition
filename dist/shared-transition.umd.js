@@ -6624,17 +6624,6 @@
 	function removeProp(el, prop) {
 	  el.style.removeProperty(prop);
 	}
-	function createDummy(node) {
-	  var dummy = node.cloneNode(true);
-	  dummy.style.background = "none";
-	  dummy.removeAttribute("src");
-	  dummy.removeAttribute("style");
-	  dummy.style.visibility = "hidden";
-	  dummy.removeAttribute("data-key");
-	  dummy.setAttribute("data-clone", "clone");
-	  node.parentNode.insertBefore(dummy, node);
-	  return dummy;
-	}
 
 	var SharedTansition =
 	/*#__PURE__*/
@@ -6650,9 +6639,11 @@
 	    this.props = undefined;
 	    this.style = undefined;
 	    this.animation = undefined;
+	    this.assignedAttrs = undefined;
 	    this.toAnimationObj = undefined;
 	    this.timingFunc = "ease-in-out";
 	    this.fromAnimationObj = undefined;
+	    this.init();
 	  }
 
 	  _createClass(SharedTansition, [{
@@ -6686,6 +6677,60 @@
 	      return this;
 	    }
 	  }, {
+	    key: "init",
+	    value: function init() {
+	      var to = this.to;
+	      var from = this.from;
+	      fadeIn(to);
+	      fadeOut(from);
+
+	      if (!this.props) {
+	        this.props = {
+	          to: rect(to),
+	          from: rect(from)
+	        };
+	      }
+
+	      var toRect = this.props.to;
+	      var fromRect = this.props.from;
+	      var toStyle = this.style ? this.style.to : style(to);
+	      var fromStyle = this.style ? this.style.from : style(from); // let scaleX = fromRect.width / toRect.width;
+	      // let scaleY = fromRect.height / toRect.height;
+
+	      this.assignedAttrs = {
+	        width: to.style.width,
+	        height: to.style.height,
+	        transform: to.style.transform
+	      };
+	      Object.assign(to.style, {
+	        width: "".concat(fromRect.width, "px"),
+	        height: "".concat(fromRect.height, "px") // transform: `scale3d(${scaleX}, ${scaleY}, 1)`
+
+	      });
+	      var newToRect = rect(to);
+	      var top = fromRect.top - newToRect.top;
+	      var left = fromRect.left - newToRect.left;
+	      Object.assign(to.style, {
+	        transform: "translate3d(".concat(left, "px, ").concat(top, "px, 0)")
+	      });
+	      this.fromAnimationObj = {
+	        width: "".concat(fromRect.width, "px"),
+	        fontSize: fromStyle.fontSize,
+	        height: "".concat(fromRect.height, "px"),
+	        background: fromStyle.background,
+	        borderRadius: fromStyle.borderRadius,
+	        transform: "translate3d(".concat(left, "px, ").concat(top, "px, 0)")
+	      };
+	      this.toAnimationObj = {
+	        width: "".concat(toRect.width, "px"),
+	        fontSize: toStyle.fontSize,
+	        height: "".concat(toRect.height, "px"),
+	        background: toStyle.background,
+	        transform: "translate3d(0, 0, 0)",
+	        borderRadius: toStyle.borderRadius
+	      };
+	    }
+	  }, {
 	    key: "play",
 	    value: function () {
 	      var _play = _asyncToGenerator(
@@ -6693,55 +6738,49 @@
 	      regeneratorRuntime.mark(function _callee() {
 	        var _this = this;
 
-	        var to, from, fakeDelay, animationObj, dummy;
+	        var to, fakeDelay;
 	        return regeneratorRuntime.wrap(function _callee$(_context) {
 	          while (1) {
 	            switch (_context.prev = _context.next) {
 	              case 0:
 	                to = this.to;
-	                from = this.from;
-	                fadeIn(to);
-	                fadeOut(from);
 
-	                fakeDelay = function fakeDelay() {
-	                  return new Promise(function (resolve, reject) {
+	                fakeDelay = function fakeDelay(timeout) {
+	                  return new Promise(function (resolve) {
 	                    setTimeout(function () {
 	                      return resolve();
-	                    }, _this.wait);
+	                    }, timeout);
 	                  });
 	                };
 
-	                animationObj = this.returnAnimateObj(from, to);
-	                this.toAnimationObj = animationObj.to;
-	                this.fromAnimationObj = animationObj.from;
-	                dummy = createDummy(to);
+	                removeProp(to, "transform");
+	                Object.assign(to.style, this.assignedAttrs);
 	                this.animation = to.animate([this.fromAnimationObj, this.toAnimationObj], {
 	                  duration: this.time,
 	                  easing: this.timingFunc
-	                });
+	                }); // this.animation.pause();
 
 	                if (!this.wait) {
-	                  _context.next = 15;
+	                  _context.next = 10;
 	                  break;
 	                }
 
 	                this.animation.pause();
-	                _context.next = 14;
-	                return fakeDelay();
+	                _context.next = 9;
+	                return fakeDelay(this.wait);
 
-	              case 14:
+	              case 9:
 	                this.animation.play();
 
-	              case 15:
-	                return _context.abrupt("return", new Promise(function (resolve, reject) {
+	              case 10:
+	                return _context.abrupt("return", new Promise(function (resolve) {
 	                  _this.animation.onfinish = function () {
 	                    _this.played = true;
-	                    dummy.remove();
 	                    resolve();
 	                  };
 	                }));
 
-	              case 16:
+	              case 11:
 	              case "end":
 	                return _context.stop();
 	            }
@@ -6759,6 +6798,7 @@
 	    key: "pause",
 	    value: function pause() {
 	      if (this.animation) this.animation.pause();
+	      return this;
 	    }
 	  }, {
 	    key: "reverse",
@@ -6767,16 +6807,41 @@
 
 	      if (!this.played) return;
 	      var to = this.to;
-	      var from = this.from;
-	      var animationObj = this.returnAnimateObj(from, to);
-	      this.toAnimationObj = animationObj.to;
-	      this.fromAnimationObj = animationObj.from;
-	      var dummy = createDummy(to);
-	      this.animation = to.animate([this.toAnimationObj, this.fromAnimationObj], {
-	        duration: this.time,
-	        easing: this.timingFunc
-	      });
-	      return new Promise(function (resolve, reject) {
+	      var from = this.from; // let toRect = this.props.to;
+	      // let fromRect = this.props.from;
+	      // let toStyle = this.style ? this.style.to : style(to);
+	      // let fromStyle = this.style ? this.style.from : style(from);
+	      // Object.assign(to.style, {
+	      //   width: `${fromRect.width}px`,
+	      //   height: `${fromRect.height}px`
+	      //   // transform: `scale3d(${scaleX}, ${scaleY}, 1)`
+	      // });
+	      // let newToRect = rect(to);
+	      // let top = fromRect.top - newToRect.top;
+	      // let left = fromRect.left - newToRect.left;
+	      // this.fromAnimationObj = {
+	      //   width: `${fromRect.width}px`,
+	      //   fontSize: fromStyle.fontSize,
+	      //   height: `${fromRect.height}px`,
+	      //   background: fromStyle.background,
+	      //   borderRadius: fromStyle.borderRadius,
+	      //   transform: `translate3d(${left}px, ${top}px, 0)`
+	      // };
+	      // this.toAnimationObj = {
+	      //   width: `${toRect.width}px`,
+	      //   fontSize: toStyle.fontSize,
+	      //   height: `${toRect.height}px`,
+	      //   background: toStyle.background,
+	      //   transform: "translate3d(0, 0, 0)",
+	      //   borderRadius: toStyle.borderRadius
+	      // };
+	      // this.animation = to.animate([this.toAnimationObj, this.fromAnimationObj], {
+	      //   duration: this.time,
+	      //   easing: this.timingFunc
+	      // });
+
+	      this.animation.reverse();
+	      return new Promise(function (resolve) {
 	        _this2.animation.onfinish = function () {
 	          fadeOut(to);
 	          fadeIn(from);
@@ -6785,7 +6850,6 @@
 	          removeProp(from, "opacity");
 	          removeProp(from, "visibility");
 	          _this2.played = false;
-	          dummy.remove();
 	          resolve();
 	        };
 	      });
@@ -6795,42 +6859,6 @@
 	    value: function isTransitioning() {
 	      var state = this.animation.playState;
 	      return state =  false ;
-	    }
-	  }, {
-	    key: "returnAnimateObj",
-	    value: function returnAnimateObj(from, to) {
-	      var toRect = this.props ? this.props.to : rect(to);
-	      var fromRect = this.props ? this.props.from : rect(from);
-	      var toStyle = this.style ? this.style.to : style(to);
-	      var fromStyle = this.style ? this.style.from : style(from);
-	      var fromObj = {
-	        top: 0,
-	        left: 0,
-	        right: "auto",
-	        bottom: "auto",
-	        position: "fixed",
-	        width: "".concat(fromRect.width, "px"),
-	        fontSize: fromStyle.fontSize,
-	        height: "".concat(fromRect.height, "px"),
-	        background: fromStyle.background,
-	        transform: "translate3d(".concat(fromRect.left, "px, ").concat(fromRect.top, "px, 0)")
-	      };
-	      var toObj = {
-	        top: 0,
-	        left: 0,
-	        right: "auto",
-	        bottom: "auto",
-	        position: "fixed",
-	        width: "".concat(toRect.width, "px"),
-	        fontSize: toStyle.fontSize,
-	        height: "".concat(toRect.height, "px"),
-	        background: toStyle.background,
-	        transform: "translate3d(".concat(toRect.left, "px, ").concat(toRect.top, "px, 0)")
-	      };
-	      return {
-	        from: fromObj,
-	        to: toObj
-	      };
 	    }
 	  }], [{
 	    key: "center",

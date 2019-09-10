@@ -1,4 +1,4 @@
-import { rect, style, fadeIn, fadeOut, removeProp, createDummy } from "./util";
+import { rect, style, fadeIn, fadeOut, removeProp } from "./util";
 
 export default class SharedTansition {
   constructor(from, to) {
@@ -10,9 +10,12 @@ export default class SharedTansition {
     this.props = undefined;
     this.style = undefined;
     this.animation = undefined;
+    this.assignedAttrs = undefined;
     this.toAnimationObj = undefined;
     this.timingFunc = "ease-in-out";
     this.fromAnimationObj = undefined;
+
+    this.init();
   }
 
   points(props) {
@@ -40,39 +43,97 @@ export default class SharedTansition {
     return this;
   }
 
-  async play() {
+  init() {
     let to = this.to;
     let from = this.from;
 
     fadeIn(to);
     fadeOut(from);
 
-    let fakeDelay = () =>
-      new Promise((resolve, reject) => {
-        setTimeout(() => resolve(), this.wait);
+    if (!this.props) {
+      this.props = {
+        to: rect(to),
+        from: rect(from)
+      };
+    }
+
+    let toRect = this.props.to;
+    let fromRect = this.props.from;
+
+    let toStyle = this.style ? this.style.to : style(to);
+    let fromStyle = this.style ? this.style.from : style(from);
+
+    // let scaleX = fromRect.width / toRect.width;
+    // let scaleY = fromRect.height / toRect.height;
+
+    this.assignedAttrs = {
+      width: to.style.width,
+      height: to.style.height,
+      transform: to.style.transform
+    };
+
+    Object.assign(to.style, {
+      width: `${fromRect.width}px`,
+      height: `${fromRect.height}px`
+      // transform: `scale3d(${scaleX}, ${scaleY}, 1)`
+    });
+
+    let newToRect = rect(to);
+
+    let top = fromRect.top - newToRect.top;
+    let left = fromRect.left - newToRect.left;
+
+    Object.assign(to.style, {
+      transform: `translate3d(${left}px, ${top}px, 0)`
+    });
+
+    this.fromAnimationObj = {
+      width: `${fromRect.width}px`,
+      fontSize: fromStyle.fontSize,
+      height: `${fromRect.height}px`,
+      background: fromStyle.background,
+      borderRadius: fromStyle.borderRadius,
+      transform: `translate3d(${left}px, ${top}px, 0)`
+    };
+
+    this.toAnimationObj = {
+      width: `${toRect.width}px`,
+      fontSize: toStyle.fontSize,
+      height: `${toRect.height}px`,
+      background: toStyle.background,
+      transform: "translate3d(0, 0, 0)",
+      borderRadius: toStyle.borderRadius
+    };
+  }
+
+  async play() {
+    let to = this.to;
+
+    let fakeDelay = timeout =>
+      new Promise(resolve => {
+        setTimeout(() => resolve(), timeout);
       });
 
-    let animationObj = this.returnAnimateObj(from, to);
-    this.toAnimationObj = animationObj.to;
-    this.fromAnimationObj = animationObj.from;
+    removeProp(to, "transform");
 
-    let dummy = createDummy(to);
+    Object.assign(to.style, this.assignedAttrs);
 
     this.animation = to.animate([this.fromAnimationObj, this.toAnimationObj], {
       duration: this.time,
       easing: this.timingFunc
     });
 
+    // this.animation.pause();
+
     if (this.wait) {
       this.animation.pause();
-      await fakeDelay();
+      await fakeDelay(this.wait);
       this.animation.play();
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.animation.onfinish = () => {
         this.played = true;
-        dummy.remove();
         resolve();
       };
     });
@@ -80,6 +141,7 @@ export default class SharedTansition {
 
   pause() {
     if (this.animation) this.animation.pause();
+    return this;
   }
 
   reverse() {
@@ -87,18 +149,49 @@ export default class SharedTansition {
     let to = this.to;
     let from = this.from;
 
-    let animationObj = this.returnAnimateObj(from, to);
-    this.toAnimationObj = animationObj.to;
-    this.fromAnimationObj = animationObj.from;
+    // let toRect = this.props.to;
+    // let fromRect = this.props.from;
 
-    let dummy = createDummy(to);
+    // let toStyle = this.style ? this.style.to : style(to);
+    // let fromStyle = this.style ? this.style.from : style(from);
 
-    this.animation = to.animate([this.toAnimationObj, this.fromAnimationObj], {
-      duration: this.time,
-      easing: this.timingFunc
-    });
+    // Object.assign(to.style, {
+    //   width: `${fromRect.width}px`,
+    //   height: `${fromRect.height}px`
+    //   // transform: `scale3d(${scaleX}, ${scaleY}, 1)`
+    // });
 
-    return new Promise((resolve, reject) => {
+    // let newToRect = rect(to);
+
+    // let top = fromRect.top - newToRect.top;
+    // let left = fromRect.left - newToRect.left;
+
+    // this.fromAnimationObj = {
+    //   width: `${fromRect.width}px`,
+    //   fontSize: fromStyle.fontSize,
+    //   height: `${fromRect.height}px`,
+    //   background: fromStyle.background,
+    //   borderRadius: fromStyle.borderRadius,
+    //   transform: `translate3d(${left}px, ${top}px, 0)`
+    // };
+
+    // this.toAnimationObj = {
+    //   width: `${toRect.width}px`,
+    //   fontSize: toStyle.fontSize,
+    //   height: `${toRect.height}px`,
+    //   background: toStyle.background,
+    //   transform: "translate3d(0, 0, 0)",
+    //   borderRadius: toStyle.borderRadius
+    // };
+
+    // this.animation = to.animate([this.toAnimationObj, this.fromAnimationObj], {
+    //   duration: this.time,
+    //   easing: this.timingFunc
+    // });
+
+    this.animation.reverse();
+
+    return new Promise(resolve => {
       this.animation.onfinish = () => {
         fadeOut(to);
         fadeIn(from);
@@ -110,7 +203,6 @@ export default class SharedTansition {
         removeProp(from, "visibility");
 
         this.played = false;
-        dummy.remove();
         resolve();
       };
     });
@@ -119,42 +211,6 @@ export default class SharedTansition {
   isTransitioning() {
     let state = this.animation.playState;
     return (state = "finished" ? false : true);
-  }
-
-  returnAnimateObj(from, to) {
-    let toRect = this.props ? this.props.to : rect(to);
-    let fromRect = this.props ? this.props.from : rect(from);
-
-    let toStyle = this.style ? this.style.to : style(to);
-    let fromStyle = this.style ? this.style.from : style(from);
-
-    let fromObj = {
-      top: 0,
-      left: 0,
-      right: "auto",
-      bottom: "auto",
-      position: "fixed",
-      width: `${fromRect.width}px`,
-      fontSize: fromStyle.fontSize,
-      height: `${fromRect.height}px`,
-      background: fromStyle.background,
-      transform: `translate3d(${fromRect.left}px, ${fromRect.top}px, 0)`
-    };
-
-    let toObj = {
-      top: 0,
-      left: 0,
-      right: "auto",
-      bottom: "auto",
-      position: "fixed",
-      width: `${toRect.width}px`,
-      fontSize: toStyle.fontSize,
-      height: `${toRect.height}px`,
-      background: toStyle.background,
-      transform: `translate3d(${toRect.left}px, ${toRect.top}px, 0)`
-    };
-
-    return { from: fromObj, to: toObj };
   }
 
   static center(node) {
