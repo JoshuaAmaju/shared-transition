@@ -60,3 +60,9 @@ function Preview(img) {
   close.onclick = closeFn;
   overlay.onclick = closeFn;
 }
+
+function element(type, src) {
+  var el = document.createElement(type);
+  el.src = src;
+  return el;
+}
